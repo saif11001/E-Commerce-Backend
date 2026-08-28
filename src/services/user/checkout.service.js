@@ -4,7 +4,7 @@ import { findCartByUser, findCartByCartId } from "../../repositories/cart.reposi
 import { decrementProductStockIfAvailable, incrementProductStock } from "../../repositories/product.repository.js";
 import { registerCouponUsage } from "../../repositories/coupon.repository.js";
 import { findShippingZoneByGovernorate } from "../../repositories/shippingZone.repository.js";
-import { createOrder } from "../../repositories/order.repository.js";
+import { createOrder, findOrderByPaymentIntentId } from "../../repositories/order.repository.js";
 import { createPendingCheckout, findPendingCheckoutByPaymentIntentId, deletePendingCheckoutById } from "../../repositories/pendingCheckout.repository.js";
 import { clearCartService } from "./cart.service.js";
 import { sendOrderConfirmationEmail } from "../../nodemailer/emails.js";
@@ -144,6 +144,12 @@ export const createStripePaymentIntentService = async ({ userId, cartId, shippin
 };
 
 export const confirmStripeCheckoutService = async (paymentIntentId) => {
+    const existingOrder = await findOrderByPaymentIntentId(paymentIntentId);
+    if (existingOrder) {
+        console.log(`Order already exists for payment ${paymentIntentId}, skipping`);
+        return existingOrder;
+    }
+    
     const pending = await findPendingCheckoutByPaymentIntentId(paymentIntentId);
     if (!pending) {
         console.log(`No pending checkout found for paymentIntent ${paymentIntentId}, possibly already processed`);
@@ -157,20 +163,28 @@ export const confirmStripeCheckoutService = async (paymentIntentId) => {
         throw error;
     }
 
-    const order = await createOrder({
-        user: pending.user,
-        items: pending.items,
-        shippingInfo: pending.shippingInfo,
-        paymentMethod: "stripe",
-        isPaid: true,
-        paidAt: Date.now(),
-        stripePaymentIntentId: pending.stripePaymentIntentId,
-        coupon: pending.coupon,
-        itemsPrice: pending.itemsPrice,
-        shippingPrice: pending.shippingPrice,
-        totalPrice: pending.totalPrice,
-        orderStatus: "pending"
-    });
+    let order;
+    try {
+        order = await createOrder({
+            user: pending.user,
+            items: pending.items,
+            shippingInfo: pending.shippingInfo,
+            paymentMethod: "stripe",
+            isPaid: true,
+            paidAt: Date.now(),
+            stripePaymentIntentId: pending.stripePaymentIntentId,
+            coupon: pending.coupon,
+            itemsPrice: pending.itemsPrice,
+            shippingPrice: pending.shippingPrice,
+            totalPrice: pending.totalPrice,
+            orderStatus: "pending"
+        });
+    } catch (error) {
+        for (const item of pending.items) {
+            await incrementProductStock(item.product, item.quantity);   // ⬅️ rollback مضاف
+        }
+        throw error;
+    }
 
     if (pending.coupon?.couponId) {
         await registerCouponUsage(pending.coupon.couponId, {

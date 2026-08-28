@@ -33,7 +33,7 @@ export const updateShippingZone = async (req, res, next) => {
 export const deleteShippingZone = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const cart = await deleteShippingZoneService(id);
+        const zone = await deleteShippingZoneService(id);
         res.status(200).json({ success: true, message: "Shipping zone deleted successfully"});
     } catch (error) {
         next(error);

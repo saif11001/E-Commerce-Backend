@@ -42,8 +42,14 @@ const cartSchema = new mongoose.Schema(
     }
 );
 
-cartSchema.index({ user: 1 }, { unique: true, sparse: true });
+cartSchema.index(
+    { user: 1 },
+    { unique: true, partialFilterExpression: { user: { $type: "objectId" } } }
+);
 
-cartSchema.index({ cartId: 1 }, { unique: true, sparse: true });
+cartSchema.index(
+    { cartId: 1 },
+    { unique: true, partialFilterExpression: { cartId: { $type: "string" } } }
+);
 
 export const Cart = mongoose.model("Cart", cartSchema);

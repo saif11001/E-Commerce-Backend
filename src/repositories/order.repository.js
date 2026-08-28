@@ -31,3 +31,7 @@ export const countOrdersByUser = (userId) => {
 export const updateOrderStatusById = (id, orderStatus) => {
     return Order.findByIdAndUpdate(id, { orderStatus }, { new: true });
 }
+
+export const findOrderByPaymentIntentId = (stripePaymentIntentId) => {
+    return Order.findOne({ stripePaymentIntentId });
+};

@@ -41,6 +41,9 @@ app.use(generalLimiter);
 
 app.use('/api/v1/webhook', webhookRouter);
 
+app.use('/api/v1/categories/', categoryAdminRouter);
+app.use('/api/v1/admin/products/', productAdminRouter);
+
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/v1/auth', authRouter);
@@ -54,8 +57,6 @@ app.use('/api/v1/orders', orderRouter);
 
 app.use('/api/v1/admin/analytics', analyticsRouter);
 app.use('/api/v1/admin/', adminRouter);
-app.use('/api/v1/categories/', categoryAdminRouter);
-app.use('/api/v1/admin/products/', productAdminRouter);
 app.use('/api/v1/admin/coupon/', couponAdminRouter);
 app.use('/api/v1/admin/shippingZone/', shippingZoneAdminRouter);
 app.use('/api/v1/admin/orders/', orderAdminRouter);
