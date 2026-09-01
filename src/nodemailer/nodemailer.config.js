@@ -1,13 +1,11 @@
 import dotenv from "dotenv";
-import * as Brevo from "@getbrevo/brevo";
+import { BrevoClient } from "@getbrevo/brevo";
 
 dotenv.config();
 
-const apiInstance = new Brevo.TransactionalEmailsApi();
-apiInstance.setApiKey(
-  Brevo.TransactionalEmailsApiApiKeys.apiKey,
-  process.env.BREVO_API_KEY
-);
+const brevo = new BrevoClient({
+  apiKey: process.env.BREVO_API_KEY,
+});
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
@@ -15,18 +13,14 @@ export const sendEmail = async ({ to, subject, html }) => {
       throw new Error("Missing email fields");
     }
 
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      name: "E-Commerce Store",
-      email: process.env.BREVO_SENDER_EMAIL,
-    };
-    sendSmtpEmail.to = [{ email: to }];
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = html;
+    const result = await brevo.transactionalEmails.sendTransacEmail({
+      sender: { name: "E-Commerce Store", email: process.env.BREVO_SENDER_EMAIL },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    });
 
-    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-
-    console.log("Email sent:", result.body?.messageId || result);
+    console.log("Email sent:", result.messageId || result);
 
     return result;
   } catch (err) {
