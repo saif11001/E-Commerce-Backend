@@ -13,7 +13,7 @@ router.post('/verify-email', authLimiter, verifyEmailValidation, validate, verif
 
 router.post('/login', authLimiter, loginValidation, validate, login);
 
-router.post('/logout', verifyToken, logout);
+router.post('/logout', logout);
 
 router.post('/forget-password', authLimiter, forgetPasswordValidation, validate, forgetPassword);
 
