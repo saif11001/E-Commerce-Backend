@@ -100,7 +100,12 @@ export const deleteCategoryService = async (id) => {
         throw new AppError("Cannot delete category with existing products", 400);
     }
 
-    await cloudinary.uploader.destroy(category.image.public_id);
+    try {
+        await cloudinary.uploader.destroy(category.image.public_id);
+    } catch (cloudinaryError) {
+        console.error("Failed to delete image from Cloudinary:", cloudinaryError.message);
+    }
+    
     await deleteCategoryById(id);
     
     return category;
