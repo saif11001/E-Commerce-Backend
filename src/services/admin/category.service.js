@@ -1,4 +1,4 @@
-import { createCategory, findAllCategories, findCategoryById, findCategoryByName, findCategoryBySlug } from "../../repositories/category.repository.js"
+import { createCategory, deleteCategoryById, findAllCategories, findCategoryById, findCategoryByName, findCategoryBySlug } from "../../repositories/category.repository.js"
 import cloudinary from "../../config/cloudinary.js";
 import AppError from "../../utils/AppError.js"
 import { slugify } from "../../utils/slugify.js";
