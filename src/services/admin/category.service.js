@@ -56,10 +56,7 @@ export const updateCategoryService = async (id, { name, image, description, isAc
         throw new AppError("Category not found", 404);
     };
 
-    if(name) {
-        if(name === category.name) {
-            throw new AppError("Please provide a different name from the current one", 400)
-        }
+    if(name && name !== category.name) {
         const existingCategory = await findCategoryByName(name);
         if(existingCategory) {
             throw new AppError("Category with this name already exists", 400);
