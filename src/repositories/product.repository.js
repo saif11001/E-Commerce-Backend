@@ -8,9 +8,26 @@ export const createProduct = ({ name, slug, shortDescription, longDescription, p
     const product = Product.create({ name, slug, shortDescription, longDescription, price, discountPrice, images, category, stock, sizes, colors, isFeatured });
     return product;
 };
+
 export const findAllProductsPaginated = (skip, limit) => {
-    const products = Product.find().populate("category", "name slug").sort({ createdAt: -1 }).skip(skip).limit(limit);
-    return products;
+    return Product.aggregate([
+        {
+            $addFields: {
+                priorityRank: {
+                    $switch: {
+                        branches: [
+                            { case: { $and: ["$isFeatured", "$isActive"] }, then: 0 },
+                            { case: "$isActive", then: 1 },
+                        ],
+                        default: 2,
+                    }
+                }
+            }
+        },
+        { $sort: { priorityRank: 1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+    ]);
 };
 
 export const countProducts = () => {
