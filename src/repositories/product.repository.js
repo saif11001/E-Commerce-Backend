@@ -47,22 +47,39 @@ export const deleteProductById = (id) => {
 
 
 export const findActiveProductsFiltered = (skip, limit, filters = {}) => {
-    const query = { isActive: true };
-
+    const match = { isActive: true };
+ 
     if (filters.search) {
-        query.name = { $regex: filters.search, $options: "i" };
+        match.name = { $regex: filters.search, $options: "i" };
     }
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-        query.price = {};
-        if (filters.minPrice !== undefined) query.price.$gte = Number(filters.minPrice);
-        if (filters.maxPrice !== undefined) query.price.$lte = Number(filters.maxPrice);
+        match.price = {};
+        if (filters.minPrice !== undefined) match.price.$gte = Number(filters.minPrice);
+        if (filters.maxPrice !== undefined) match.price.$lte = Number(filters.maxPrice);
     }
 
-    return Product.find(query)
-        .populate("category", "name slug")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    return Product.aggregate([
+        { $match: match },
+        {
+            $addFields: {
+                featuredPriority: { $cond: [{ $eq: ["$isFeatured", true] }, 0, 1] },
+            },
+        },
+        { $sort: { featuredPriority: 1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+            $lookup: {
+                from: "categories",
+                localField: "category",
+                foreignField: "_id",
+                as: "category",
+                pipeline: [{ $project: { name: 1, slug: 1 } }],
+            },
+        },
+        { $unwind: "$category" },
+        { $project: { featuredPriority: 0 } },
+    ]);
 };
 
 export const countActiveProductsFiltered = (filters = {}) => {
