@@ -10,7 +10,7 @@ const sanitizeProduct = (product) => {
 };
 
 export const getAllProductsService = async ({ page = 1, limit = 12, search, minPrice, maxPrice, category }) => {
-    const skip = (page - 1) * limit;
+    const skip = (Number(page) - 1) * Number(limit);
 
     let categoryId;
     if (category) {
@@ -26,7 +26,7 @@ export const getAllProductsService = async ({ page = 1, limit = 12, search, minP
 
     const filters = { search, minPrice, maxPrice, categoryId };
     const [products, total] = await Promise.all([
-        findActiveProductsFiltered(skip, limit, filters),
+        findActiveProductsFiltered(skip, Number(limit), filters),
         countActiveProductsFiltered(filters),
     ]);
 
