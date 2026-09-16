@@ -1,5 +1,5 @@
 import { redis } from "../../config/redis.js";
-import { findCategoryById } from "../../repositories/category.repository.js";
+import { findCategoryById, findCategoryBySlug } from "../../repositories/category.repository.js";
 import { countActiveProductsByCategory, countActiveProductsFiltered, findActiveProductBySlug, findActiveProductsByCategoryPaginated, findActiveProductsFiltered, findFeaturedProductsFromDB } from "../../repositories/product.repository.js";
 import AppError from "../../utils/AppError.js";
 
@@ -9,23 +9,37 @@ const sanitizeProduct = (product) => {
     return safeProduct;
 };
 
-export const getAllProductsService = async ({ page = 1, limit = 12, search, minPrice, maxPrice }) => {
-    const skip = ( page - 1 ) * limit;
-    const filters = { search, minPrice, maxPrice };
+export const getAllProductsService = async ({ page = 1, limit = 12, search, minPrice, maxPrice, category }) => {
+    const skip = (page - 1) * limit;
+
+    let categoryId;
+    if (category) {
+        const categoryDoc = await findCategoryBySlug(category);
+        if (!categoryDoc) {
+            return {
+                products: [],
+                pagination: { total: 0, page: Number(page), limit: Number(limit), totalPages: 0 },
+            };
+        }
+        categoryId = categoryDoc._id;
+    }
+
+    const filters = { search, minPrice, maxPrice, categoryId };
     const [products, total] = await Promise.all([
         findActiveProductsFiltered(skip, limit, filters),
-        countActiveProductsFiltered(filters)
-    ])
+        countActiveProductsFiltered(filters),
+    ]);
+
     return {
         products: products.map(sanitizeProduct),
         pagination: {
             total,
             page: Number(page),
             limit: Number(limit),
-            totalPages: Math.ceil(total/limit)
-        }
-    } 
-}
+            totalPages: Math.ceil(total / limit),
+        },
+    };
+};
 
 export const getProductBySlugService = async (slug) => {
     let product = await findActiveProductBySlug(slug);

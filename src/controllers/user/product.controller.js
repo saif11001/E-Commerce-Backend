@@ -2,8 +2,8 @@ import { getAllProductsService, getFeaturedProductsService, getProductBySlugServ
 
 export const getAllProducts = async (req, res, next) => {
     try {
-        const { page = 1, limit = 12, search, minPrice, maxPrice } = req.query;
-        const { products, pagination } = await getAllProductsService({ page, limit, search, minPrice, maxPrice });
+        const { page = 1, limit = 12, search, minPrice, maxPrice, category } = req.query;
+        const { products, pagination } = await getAllProductsService({ page, limit, search, minPrice, maxPrice, category });
         res.status(200).json({ success: true, products, pagination });
     } catch (error) {
         next(error);

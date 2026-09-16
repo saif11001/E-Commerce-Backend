@@ -48,7 +48,7 @@ export const deleteProductById = (id) => {
 
 export const findActiveProductsFiltered = (skip, limit, filters = {}) => {
     const match = { isActive: true };
- 
+
     if (filters.search) {
         match.name = { $regex: filters.search, $options: "i" };
     }
@@ -56,6 +56,9 @@ export const findActiveProductsFiltered = (skip, limit, filters = {}) => {
         match.price = {};
         if (filters.minPrice !== undefined) match.price.$gte = Number(filters.minPrice);
         if (filters.maxPrice !== undefined) match.price.$lte = Number(filters.maxPrice);
+    }
+    if (filters.categoryId) {
+        match.category = filters.categoryId;
     }
 
     return Product.aggregate([
@@ -92,6 +95,9 @@ export const countActiveProductsFiltered = (filters = {}) => {
         query.price = {};
         if (filters.minPrice !== undefined) query.price.$gte = Number(filters.minPrice);
         if (filters.maxPrice !== undefined) query.price.$lte = Number(filters.maxPrice);
+    }
+    if (filters.categoryId) {
+        query.category = filters.categoryId;
     }
 
     return Product.countDocuments(query);
