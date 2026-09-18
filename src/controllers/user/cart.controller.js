@@ -1,4 +1,4 @@
-import { addItemToCartService, applyCouponService, clearCartService, getCartService, removeCouponService, removeItemFromCartService, updateItemQuantityService } from "../../services/user/cart.service.js";
+import { addItemToCartService, applyCouponService, clearCartService, getCartService, mergeGuestCartIntoUserService, removeCouponService, removeItemFromCartService, updateItemQuantityService } from "../../services/user/cart.service.js";
 
 export const addItemToCart = async (req, res, next) => {
     try {
@@ -81,3 +81,13 @@ export const removeCoupon = async (req, res, next) => {
         next(error);
     }
 }
+
+export const mergeGuestCart = async (req, res, next) => {
+    try {
+        await mergeGuestCartIntoUserService({ userId: req.userId, cartId: req.cartId });
+        res.clearCookie("cartId");
+        res.status(200).json({ success: true, message: "Cart merged successfully" });
+    } catch (error) {
+        next(error);
+    }
+};
