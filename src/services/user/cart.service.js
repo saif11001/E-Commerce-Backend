@@ -63,7 +63,7 @@ export const addItemToCartService = async ({ userId, cartId, productId, size }) 
 
     const existingItem = cart.items.find(
         (item) =>
-            item.product.toString() === productId &&
+            item.product._id.toString() === productId &&
             item.size === size
     );
 
