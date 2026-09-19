@@ -14,7 +14,9 @@ const getOrCreateCart = async ({ userId, cartId }) => {
 
 const buildCartSummary = async (cart, governorate) => {
     const itemsPrice = cart.items.reduce((total, item) => {
-        const price = item.product.discountPrice > 0 ? item.product.discountPrice : item.product.price;
+        const price = item.product.discountPrice > 0
+            ? item.product.price - item.product.discountPrice
+            : item.product.price;
         return total + price * item.quantity;
     }, 0);
 
