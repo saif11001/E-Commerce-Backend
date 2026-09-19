@@ -16,6 +16,10 @@ const cartSchema = new mongoose.Schema(
             ref: "Coupon",
             default: null
         },
+        governorate: {
+            type: String,
+            default: null
+        },
         items: [
             {
                 product: {

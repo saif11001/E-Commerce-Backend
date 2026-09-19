@@ -12,7 +12,14 @@ const getOrCreateCart = async ({ userId, cartId }) => {
     return cart; 
 }
 
-const buildCartSummary = async (cart, governorate) => {
+const buildCartSummary = async (cart, governorateOverride) => {
+    if (governorateOverride !== undefined && governorateOverride !== cart.governorate) {
+        cart.governorate = governorateOverride || null;
+        await cart.save();
+    }
+
+    const governorate = cart.governorate;
+
     const itemsPrice = cart.items.reduce((total, item) => {
         const price = item.product.discountPrice > 0
             ? item.product.price - item.product.discountPrice
@@ -157,7 +164,9 @@ export const applyCouponService = async ({ userId, cartId, code }) => {
     }
 
     const itemsPrice = cart.items.reduce((total, item) => {
-        const price = item.product.discountPrice > 0 ? item.product.discountPrice : item.product.price;
+        const price = item.product.discountPrice > 0
+            ? item.product.price - item.product.discountPrice
+            : item.product.price;
         return total + price * item.quantity;
     }, 0);
 
