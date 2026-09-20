@@ -1,4 +1,4 @@
-import { deleteAllUserService, deleteUserService, getAllUsersService, getUserService } from "../../services/admin/users.service.js";
+import { deleteAllUserService, deleteUserService, getAllUsersService, getUserService, getUserDetailsService } from "../../services/admin/users.service.js";
 import { sanitizeUser } from "../../utils/sanitizeUser.js";
 
 export const getAllUsers = async (req, res, next) => {
@@ -16,6 +16,16 @@ export const getUser = async (req, res, next) => {
         const { userId } = req.params;
         const user = await getUserService(userId);
         res.status(200).json({ success: true, user: sanitizeUser(user) });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const getUserDetails = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { user, orders, stats } = await getUserDetailsService(userId);
+        res.status(200).json({ success: true, user: sanitizeUser(user), orders, stats });
     } catch (error) {
         next(error);
     }

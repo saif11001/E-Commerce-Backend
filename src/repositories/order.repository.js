@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Order } from "../models/order.model.js";
 
 export const findAllOrdersPaginated = (skip, limit) => {
@@ -34,4 +35,12 @@ export const updateOrderStatusById = (id, orderStatus) => {
 
 export const findOrderByPaymentIntentId = (stripePaymentIntentId) => {
     return Order.findOne({ stripePaymentIntentId });
+};
+
+export const getUserSpending = async (userId) => {
+    const [result] = await Order.aggregate([
+        { $match: { user: new mongoose.Types.ObjectId(userId), orderStatus: { $ne: "cancelled" } } },
+        { $group: { _id: null, totalSpent: { $sum: "$totalPrice" } } },
+    ]);
+    return result?.totalSpent || 0;
 };
