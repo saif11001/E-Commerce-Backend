@@ -9,7 +9,7 @@ import { createPendingCheckout, findPendingCheckoutByPaymentIntentId, deletePend
 import { clearCartService } from "./cart.service.js";
 import { sendOrderConfirmationEmail } from "../../nodemailer/emails.js";
 
-const buildCheckoutSummary = async (cart, shippingInfo) => {
+const buildCheckoutSummary = async (cart, shippingInfo, { userId } = {}) => {
     if (!cart || cart.items.length === 0) {
         throw new AppError("Your cart is empty", 400);
     }
@@ -41,6 +41,21 @@ const buildCheckoutSummary = async (cart, shippingInfo) => {
     let discount = 0;
     let couponData = { couponId: null, code: null, discount: 0 };
     if (cart.coupon) {
+        const email = shippingInfo.email?.toLowerCase();
+        const alreadyUsed = cart.coupon.usedBy?.some((entry) => {
+            if (userId && entry.userId) {
+                return entry.userId.toString() === userId;
+            }
+            if (email && entry.email) {
+                return entry.email === email;
+            }
+            return false;
+        });
+
+        if (alreadyUsed) {
+            throw new AppError("You have already used this coupon", 400);
+        }
+
         if (cart.coupon.discountType === "percentage") {
             discount = (itemsPrice * cart.coupon.discountValue) / 100;
         } else {
@@ -78,9 +93,16 @@ const reserveStockOrThrow = async (orderItems) => {
     }
 };
 
+export const getCheckoutPreviewService = async ({ userId, cartId, shippingInfo }) => {
+    const cart = userId ? await findCartByUser(userId) : await findCartByCartId(cartId);
+    const { itemsPrice, shippingPrice, totalPrice, couponData } = await buildCheckoutSummary(cart, shippingInfo, { userId });
+
+    return { itemsPrice, shippingPrice, totalPrice, coupon: couponData };
+};
+
 export const processCodCheckoutService = async ({ userId, cartId, shippingInfo }) => {
     const cart = userId ? await findCartByUser(userId) : await findCartByCartId(cartId);
-    const { orderItems, itemsPrice, shippingPrice, totalPrice, couponData, coupon } = await buildCheckoutSummary(cart, shippingInfo);
+    const { orderItems, itemsPrice, shippingPrice, totalPrice, couponData, coupon } = await buildCheckoutSummary(cart, shippingInfo, { userId });
 
     await reserveStockOrThrow(orderItems);
 
@@ -122,7 +144,7 @@ export const processCodCheckoutService = async ({ userId, cartId, shippingInfo }
 
 export const createStripePaymentIntentService = async ({ userId, cartId, shippingInfo }) => {
     const cart = userId ? await findCartByUser(userId) : await findCartByCartId(cartId);
-    const { orderItems, itemsPrice, shippingPrice, totalPrice, couponData } = await buildCheckoutSummary(cart, shippingInfo);
+    const { orderItems, itemsPrice, shippingPrice, totalPrice, couponData } = await buildCheckoutSummary(cart, shippingInfo, { userId });
 
     const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(totalPrice * 100),
@@ -183,7 +205,7 @@ export const confirmStripeCheckoutService = async (paymentIntentId) => {
         });
     } catch (error) {
         for (const item of pending.items) {
-            await incrementProductStock(item.product, item.quantity);   // ⬅️ rollback مضاف
+            await incrementProductStock(item.product, item.quantity);
         }
         throw error;
     }

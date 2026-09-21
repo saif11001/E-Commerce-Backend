@@ -1,4 +1,4 @@
-import { processCodCheckoutService, createStripePaymentIntentService } from "../../services/user/checkout.service.js";
+import { processCodCheckoutService, createStripePaymentIntentService, getCheckoutPreviewService } from "../../services/user/checkout.service.js";
 
 export const checkout = async (req, res, next) => {
     try {
@@ -16,6 +16,17 @@ export const checkout = async (req, res, next) => {
         }
 
         return res.status(400).json({ success: false, message: "Invalid payment method" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getCheckoutPreview = async (req, res, next) => {
+    try {
+        const { shippingInfo } = req.body;
+        const { userId, cartId } = req;
+        const preview = await getCheckoutPreviewService({ userId, cartId, shippingInfo });
+        res.status(200).json({ success: true, preview });
     } catch (error) {
         next(error);
     }

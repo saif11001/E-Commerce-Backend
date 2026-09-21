@@ -4,7 +4,7 @@ export const findCartByUser = (userId) => {
     const cart = Cart
         .findOne({ user: userId })
         .populate("items.product", "name price discountPrice images stock isActive")
-        .populate("coupon", "code discountType discountValue");
+        .populate("coupon", "code discountType discountValue usedBy");
     return cart;
 }
 
@@ -12,7 +12,7 @@ export const findCartByCartId = (cartId) => {
     const cart = Cart
         .findOne({ cartId })
         .populate("items.product", "name price discountPrice images stock isActive")
-        .populate("coupon", "code discountType discountValue");
+        .populate("coupon", "code discountType discountValue usedBy");
     return cart;
 }
 
