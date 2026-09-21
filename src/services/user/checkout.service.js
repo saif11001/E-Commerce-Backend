@@ -23,7 +23,9 @@ const buildCheckoutSummary = async (cart, shippingInfo) => {
             throw new AppError(`Product "${product?.name || "unknown"}" is no longer available`, 400);
         }
 
-        const price = product.discountPrice > 0 ? product.discountPrice : product.price;
+        const price = product.discountPrice > 0
+            ? product.price - product.discountPrice
+            : product.price;
         itemsPrice += price * item.quantity;
 
         orderItems.push({
