@@ -2,8 +2,8 @@ import { getAllOrdersService, getOrderService, updateOrderStatusService } from "
 
 export const getAllOrders = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
-        const { orders, pagination } = await getAllOrdersService({ page, limit });
+        const { page = 1, limit = 10, status } = req.query;
+        const { orders, pagination } = await getAllOrdersService({ page, limit, status });
         res.status(200).json({ success: true, orders, pagination })
     } catch (error) {
         next(error);

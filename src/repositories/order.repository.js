@@ -1,16 +1,26 @@
 import mongoose from "mongoose";
 import { Order } from "../models/order.model.js";
 
-export const findAllOrdersPaginated = (skip, limit) => {
-    return Order.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+export const findAllOrdersPaginated = (skip, limit, filters = {}) => {
+    const query = {};
+    if (filters.status) query.orderStatus = filters.status;
+    return Order.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("user", "name email");
 }
 
-export const countAllOrders = () => {
-    return Order.countDocuments();
+export const countAllOrders = (filters = {}) => {
+    const query = {};
+    if (filters.status) query.orderStatus = filters.status;
+    return Order.countDocuments(query);
 }
 
 export const findOrderById = (id) => {
-    return Order.findById(id).populate("items.product", "name slug");
+    return Order.findById(id)
+        .populate("items.product", "name slug")
+        .populate("user", "name email image");
 }
 
 export const findOrdersByEmail = (email) => {

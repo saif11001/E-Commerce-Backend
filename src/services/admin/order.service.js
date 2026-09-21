@@ -4,11 +4,12 @@ import AppError from "../../utils/AppError.js";
 
 const VALID_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 
-export const getAllOrdersService = async ({ page = 1, limit = 10 }) => {
+export const getAllOrdersService = async ({ page = 1, limit = 10, status }) => {
     const skip = (page - 1) * limit;
+    const filters = status ? { status } : {};
     const [orders, total] = await Promise.all([
-        findAllOrdersPaginated(skip, limit),
-        countAllOrders()
+        findAllOrdersPaginated(skip, limit, filters),
+        countAllOrders(filters)
     ]);
 
     return {
