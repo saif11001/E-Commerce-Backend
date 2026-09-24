@@ -1,5 +1,5 @@
 import express from "express";
-import { forgetPassword, login, logout, resetPassword, signup, verifyEmail } from "../controllers/auth.controller.js";
+import { forgetPassword, getChatToken, login, logout, resetPassword, signup, verifyEmail } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
 import { authLimiter } from "../middlewares/rateLimiter.js";
 import { validate } from "../middlewares/validate.js";
@@ -18,5 +18,7 @@ router.post('/logout', logout);
 router.post('/forget-password', authLimiter, forgetPasswordValidation, validate, forgetPassword);
 
 router.post('/reset-password/:token', authLimiter, resetPasswordValidation, validate, resetPassword);
+
+router.get('/chat-token', verifyToken, getChatToken);
 
 export default router;

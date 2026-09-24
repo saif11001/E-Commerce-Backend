@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { forgetPasswordService, loginService, logoutService, resetPasswordService, signupService, verifyEmailService } from "../services/auth.service.js";
+import { forgetPasswordService, generateChatTokenService, loginService, logoutService, resetPasswordService, signupService, verifyEmailService } from "../services/auth.service.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
 import { setCookies, clearAuthCookies } from "../utils/setCookies.js";
 
@@ -77,6 +77,15 @@ export const resetPassword = async (req, res, next) => {
         const { password } = req.body;
         const user = await resetPasswordService({ token, password });
         res.status(200).json({ success: true, message: "Password reset successful", user: sanitizeUser(user) });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getChatToken = async (req, res, next) => {
+    try {
+        const chatToken = generateChatTokenService(req.userId);
+        res.status(200).json({ success: true, chatToken });
     } catch (error) {
         next(error);
     }

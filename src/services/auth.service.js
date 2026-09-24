@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-
+import jwt from "jsonwebtoken";
 
 import { createUser, findUserByEmail, findUserByResetToken, findUserByVerificationToken, updateUserPassword, verifyUserById } from "../repositories/user.repository.js";
 import { generateTokens } from "../utils/generateTokens.js";
@@ -148,4 +148,9 @@ export const resetPasswordService = async({ token, password }) => {
     }
 
     return updatedUser;
+}
+
+export const generateChatTokenService = (userId) => {
+    const chatToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+    return chatToken;
 }
