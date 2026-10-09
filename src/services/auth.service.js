@@ -42,8 +42,8 @@ export const signupService = async ({name, email, password, cartId }) => {
     return {user, accessToken, refreshToken};
 }
 
-export const verifyEmailService = async (token) => {
-    const user = await findUserByVerificationToken(token);
+export const verifyEmailService = async (email, token) => {
+    const user = await findUserByVerificationToken(email, token);
     if(!user) {
         throw new AppError("Invalid or expired verification code", 400);
     }
@@ -151,6 +151,6 @@ export const resetPasswordService = async({ token, password }) => {
 }
 
 export const generateChatTokenService = (userId) => {
-    const chatToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+    const chatToken = jwt.sign({ userId, type: "chat" }, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
     return chatToken;
 }

@@ -30,7 +30,13 @@ dotenv.config();
 const PORT = process.env.PORT || 7000;
 
 const app = express();
-app.set("trust proxy", 1);
+app.set("trust proxy", 2);
+
+app.get(["/health", "/api/v1/health"], (req, res) => {
+    res.set("Cache-Control", "no-store");
+    res.status(200).json({ ok: true });
+});
+
 app.use(helmet());
 app.use(cors({
     origin: process.env.CLIENT_URL,
@@ -38,6 +44,11 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(generalLimiter);
+
+app.use("/api", (req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+});
 
 app.use('/api/v1/webhook', webhookRouter);
 

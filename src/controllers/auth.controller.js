@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { forgetPasswordService, generateChatTokenService, loginService, logoutService, resetPasswordService, signupService, verifyEmailService } from "../services/auth.service.js";
 import { sanitizeUser } from "../utils/sanitizeUser.js";
-import { setCookies, clearAuthCookies } from "../utils/setCookies.js";
+import { setCookies, clearAuthCookies, cartCookieOptions } from "../utils/setCookies.js";
 
 export const signup = async (req, res, next) => {
     try {
@@ -9,7 +9,7 @@ export const signup = async (req, res, next) => {
         const { cartId } = req.cookies;
         const { user, accessToken, refreshToken } = await signupService({ name, email, password, cartId });
         setCookies(res, accessToken, refreshToken);
-        res.clearCookie("cartId");
+        res.clearCookie("cartId", cartCookieOptions);
         res.status(201).json({ success: true, user: sanitizeUser(user) });
     } catch (error) {
         next(error);
@@ -18,8 +18,8 @@ export const signup = async (req, res, next) => {
 
 export const verifyEmail = async (req, res, next) => {
     try {
-        const { token } = req.body;
-        const user = await verifyEmailService(token);
+        const { email, token } = req.body;
+        const user = await verifyEmailService(email, token);
         res.status(200).json({ success: true, user: sanitizeUser(user) });
     } catch (error) {
         next(error);
@@ -40,7 +40,7 @@ export const login = async (req, res, next) => {
             });
         }
         setCookies(res, accessToken, refreshToken);
-        res.clearCookie("cartId");
+        res.clearCookie("cartId", cartCookieOptions);
         res.status(200).json({ success: true, user: sanitizeUser(user) });
     } catch (error) {
         next(error);

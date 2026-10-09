@@ -23,3 +23,5 @@ export const clearAuthCookies = (res) => {
     res.clearCookie("accessToken", cookieOptions);
     res.clearCookie("refreshToken", cookieOptions);
 };
+
+export const cartCookieOptions = { ...cookieOptions };

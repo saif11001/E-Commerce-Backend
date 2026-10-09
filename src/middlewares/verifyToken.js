@@ -15,6 +15,7 @@ export const verifyToken = async (req, res, next) => {
         if(accessToken) {
             try {
                 const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+                if (decoded.type === "chat") throw new Error("Invalid token");
                 req.userId = decoded.userId;
                 return next();
             } catch (error) {

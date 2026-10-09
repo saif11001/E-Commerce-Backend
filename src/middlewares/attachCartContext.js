@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import { cartCookieOptions } from "../utils/setCookies.js";
 
 export const attachCartContext = (req, res, next) => {
     const { accessToken, cartId } = req.cookies;
@@ -7,10 +8,12 @@ export const attachCartContext = (req, res, next) => {
     if (accessToken) {
         try {
             const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
-            req.userId = decoded.userId;
-            return next();
+            if (decoded.type !== "chat") {
+                req.userId = decoded.userId;
+                return next();
+            }
         } catch (error) {
-            
+            // invalid or expired token: fall back to the guest cart
         }
     }
 
@@ -21,9 +24,7 @@ export const attachCartContext = (req, res, next) => {
 
     const newCartId = crypto.randomBytes(24).toString("hex");
     res.cookie("cartId", newCartId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        ...cartCookieOptions,
         maxAge: 30 * 24 * 60 * 60 * 1000
     });
     req.cartId = newCartId;

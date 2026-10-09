@@ -10,8 +10,8 @@ export const createUser = ({ name, email, password, role, verificationToken, ver
     return user;
 };
 
-export const findUserByVerificationToken = (verificationToken) => {
-    const user = User.findOne({ verificationToken, verificationExpiresAt: { $gt: Date.now() } });
+export const findUserByVerificationToken = (email, verificationToken) => {
+    const user = User.findOne({ email, verificationToken, verificationExpiresAt: { $gt: Date.now() } });
     return user;
 }
 

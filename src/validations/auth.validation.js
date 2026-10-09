@@ -16,6 +16,8 @@ export const loginValidation = [
 ];
 
 export const verifyEmailValidation = [
+    body("email").trim().notEmpty().withMessage("Email is required")
+        .isEmail().withMessage("Please provide a valid email"),
     body("token").trim().notEmpty().withMessage("Verification code is required")
         .isLength({ min: 6, max: 6 }).withMessage("Verification code must be 6 digits")
 ];
